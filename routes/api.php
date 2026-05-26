@@ -8,11 +8,21 @@ use Illuminate\Support\Facades\Route;
 // })->middleware('auth:api');
 
 Route::prefix('v1')->group(function () {
-    Route::controller(\App\Http\Controllers\Auth\AuthController::class)
-        ->prefix('/login')
+    Route::controller(\App\Http\Controllers\Auth\AuthController::class)->group(function () {
+        Route::post('login/users', 'login');
+
+        Route::middleware('auth:users')->group(function () {
+            Route::get('login/me', 'me');
+            Route::post('logout/users', 'logout');
+        });
+    });
+
+    // TESTING ROUTES
+    Route::controller(\App\Http\Controllers\OrdersController::class)
+        ->prefix('/orders')
         ->group(
             function () {
-                Route::post('users', 'login');
+                Route::post('create', 'create');
             }
         );
 });

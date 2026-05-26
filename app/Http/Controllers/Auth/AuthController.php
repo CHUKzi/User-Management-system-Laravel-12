@@ -25,10 +25,14 @@ class AuthController extends Controller
             }
 
             config(['auth.guards.' . $guardType . '.driver' => 'session']);
+            $sessionGuard = Auth::guard($guardType);
+            $authenticated = $sessionGuard->attempt($credentials);
 
-            if (Auth::guard($guardType)->attempt($credentials)) {
+            if ($authenticated) {
+                $user = $sessionGuard->user();
+
                 config(['auth.guards.' . $guardType . '.driver' => 'passport']);
-                $user = Auth::guard($guardType)->user();
+                Auth::forgetGuards();
 
                 $token = $user->createToken('Personal Access Token')->accessToken;
 
@@ -37,6 +41,8 @@ class AuthController extends Controller
                     'token' => $token,
                 ]);
             } else {
+                config(['auth.guards.' . $guardType . '.driver' => 'passport']);
+                Auth::forgetGuards();
                 return response()->json([
                     'error' => 'Authentication failed',
                     'message' => 'Invalid username or password',
@@ -48,5 +54,24 @@ class AuthController extends Controller
                 'message' => $error->getMessage(),
             ], 403);
         }
+    }
+
+    public function me(Request $request)
+    {
+        return response()->json([
+            'user' => $request->user(),
+        ]);
+    }
+
+    public function logout(Request $request)
+    {
+        $token = $request->user()->token();
+        if ($token) {
+            $token->revoke();
+        }
+
+        return response()->json([
+            'message' => 'Successfully logged out',
+        ]);
     }
 }

@@ -11,6 +11,12 @@ class UserDatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // $this->call([]);
+        \App\Models\User::updateOrCreate(
+            ['email' => 'royanharsha6@gmail.com'],
+            [
+                'name' => 'Royan Harsha',
+                'password' => \Illuminate\Support\Facades\Hash::make('12345678'),
+            ]
+        );
     }
 }
